@@ -1,0 +1,60 @@
+# Laravel specific
+/vendor/
+.env
+.env.*
+*.env
+Homestead.yaml
+Homestead.json
+npm-debug.log
+yarn-error.log
+.idea/
+.phpunit.result.cache
+.phpstorm.meta.php
+/storage/*.key
+/public/storage
+/storage/framework/cache/data
+/storage/logs/*.log
+/bootstrap/cache/*.php
+
+# Node
+/node_modules/
+/public/hot
+/public/js/*.map
+/public/css/*.map
+
+# Laravel Mix / Vite
+/public/build
+/public/mix-manifest.json
+/vite.config.js.timestamp-*
+.vite/deps/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Editors & IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Composer
+composer.lock
+
+# npm / yarn / pnpm lock files (optional)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Cache
+/.cache/
+/tmp/
+
+# Docker
+docker-compose.override.yml
+
+# Testing / CI
+coverage/
+reports/
