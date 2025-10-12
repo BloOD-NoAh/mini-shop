@@ -62,7 +62,8 @@ import { onMounted, reactive, ref } from 'vue';
 const products = reactive({ data: [], current_page: 1, last_page: 1, links: {} });
 const flash = ref('');
 
-function formatPrice(c) { return (c / 100).toFixed(2); }\nfunction formatDec(x) { return Number(x ?? 0).toFixed(2); }
+function formatPrice(c) { return (c / 100).toFixed(2); }
+function formatDec(x) { return Number(x ?? 0).toFixed(2); }
 
 async function fetchProducts(page = 1) {
   const res = await axios.get('/admin/products', { headers: { Accept: 'application/json' }, params: { page } });
@@ -96,3 +97,4 @@ function toggleTheme(){
   try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch(e) {}
 }
 </script>
+

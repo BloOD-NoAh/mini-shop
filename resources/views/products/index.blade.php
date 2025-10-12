@@ -19,9 +19,9 @@
                 </form>
                 @isset($categories)
                     <div class="mt-3 flex flex-wrap gap-2">
-                        <a href="{{ url('/') }}" class="px-3 py-1 rounded-full text-sm border {{ empty($activeCategory) ? 'bg-gray-900 text-white border-gray-900 dark:border-gray-700' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-900 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-800' }}">All</a>
+                        <a href="{{ url('/') }}" class="px-3 py-1 rounded-full text-sm border {{ empty($activeCategory) ? 'bg-primary text-white border-primary-600 dark:bg-primary dark:border-primary-600 hover:bg-primary-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-900 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-800' }}">All</a>
                         @foreach ($categories as $cat)
-                            <a href="{{ url('/category/'.$cat) }}" class="px-3 py-1 rounded-full text-sm border {{ ($activeCategory ?? '') === $cat ? 'bg-gray-900 text-white border-gray-900 dark:border-gray-700' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-900 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-800' }}">{{ $cat }}</a>
+                            <a href="{{ url('/category/'.$cat) }}" class="px-3 py-1 rounded-full text-sm border {{ ($activeCategory ?? '') === $cat ? 'bg-primary text-white border-primary-600 dark:bg-primary dark:border-primary-600 hover:bg-primary-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-900 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-800' }}">{{ $cat }}</a>
                         @endforeach
                     </div>
                 @endisset
@@ -61,5 +61,6 @@
         </div>
     </div>
 </x-app-layout>
+
 
 
