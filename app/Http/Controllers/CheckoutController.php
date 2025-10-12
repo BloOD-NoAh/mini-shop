@@ -5,34 +5,17 @@ namespace App\Http\Controllers;
 use App\Models\CartItem;
 use App\Models\Order;
 use App\Models\OrderItem;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
+use Stripe\Stripe;
+use Stripe\PaymentIntent;
 
 class CheckoutController extends Controller
 {
-    public function page()
+    public function create(Request $request)
     {
-        $user = auth()->user();
-
-        $cartItems = CartItem::query()
-            ->where('user_id', $user->id)
-            ->with('product')
-            ->get();
-
-        $subtotal = (int) $cartItems->sum(fn ($i) => $i->product->price_cents * $i->quantity);
-        $publishableKey = config('stripe.key');
-
-        return view('checkout.index', [
-            'subtotal_cents' => $subtotal,
-            'stripe_key' => $publishableKey,
-            'has_stripe' => $publishableKey && class_exists(\Stripe\StripeClient::class),
-        ]);
-    }
-
-    public function checkout(Request $request): JsonResponse
-    {
-        $user = auth()->user();
+        $user = $request->user();
 
         $cartItems = CartItem::query()
             ->where('user_id', $user->id)
@@ -40,56 +23,60 @@ class CheckoutController extends Controller
             ->get();
 
         if ($cartItems->isEmpty()) {
-            return response()->json(['message' => 'Cart is empty'], 422);
+            abort(400, 'Cart is empty');
         }
 
-        $amount = (int) $cartItems->sum(fn ($i) => $i->product->price_cents * $i->quantity);
+        $amountCents = (int) $cartItems->sum(fn ($i) => $i->product->price_cents * $i->quantity);
+        $currency = config('stripe.currency', 'usd');
 
-        $secretKey = config('stripe.secret');
-
-        if ($secretKey && class_exists(\Stripe\StripeClient::class)) {
-            try {
-                $stripe = new \Stripe\StripeClient($secretKey);
-                $pi = $stripe->paymentIntents->create([
-                    'amount' => $amount,
-                    'currency' => 'usd',
-                    'metadata' => [
-                        'user_id' => (string) $user->id,
-                    ],
-                    'automatic_payment_methods' => ['enabled' => true],
-                ]);
-
-                return response()->json([
-                    'client_secret' => $pi->client_secret,
-                    'amount' => $amount,
-                ]);
-            } catch (\Throwable $e) {
-                // Fallback to mock if Stripe not available
-            }
+        if ($amountCents < 1) {
+            abort(400, 'Invalid amount');
         }
 
-        return response()->json([
-            'mock' => true,
-            'amount' => $amount,
-            'message' => 'Stripe not configured; using mock payment',
+        Stripe::setApiKey(config('stripe.secret'));
+        $intent = PaymentIntent::create([
+            'amount' => $amountCents,
+            'currency' => $currency,
+            'metadata' => [
+                'user_id' => (string) $user->id,
+            ],
+            'automatic_payment_methods' => ['enabled' => true],
+        ]);
+
+        $cart = $cartItems->map(fn ($i) => [
+            'product' => [
+                'id' => $i->product_id,
+                'name' => $i->product->name,
+            ],
+            'quantity' => (int) $i->quantity,
+            'unit_price_cents' => (int) $i->product->price_cents,
+        ])->values();
+
+        return Inertia::render('Checkout/Pay', [
+            'clientSecret' => $intent->client_secret,
+            'amountCents' => $amountCents,
+            'currency' => $currency,
+            'cart' => $cart,
         ]);
     }
 
-    public function confirm(): JsonResponse
+    public function confirm(Request $request)
     {
-        $user = auth()->user();
+        $data = $request->validate([
+            'paymentIntentId' => ['required', 'string'],
+        ]);
 
+        $user = $request->user();
         $cartItems = CartItem::query()
             ->where('user_id', $user->id)
             ->with('product')
             ->get();
 
         if ($cartItems->isEmpty()) {
-            return response()->json(['message' => 'Cart is empty'], 422);
+            return redirect()->back()->with('status', 'Cart is empty');
         }
 
         $order = null;
-
         DB::transaction(function () use ($user, $cartItems, &$order): void {
             $order = Order::create([
                 'user_id' => $user->id,
@@ -110,13 +97,11 @@ class CheckoutController extends Controller
             CartItem::where('user_id', $user->id)->delete();
         });
 
-        return response()->json([
-            'message' => 'Payment confirmed',
-            'order' => $order->load('items'),
-        ]);
+        return redirect()->route('orders.show', $order->id)
+            ->with('status', 'Payment successful');
     }
 
-    public function show(Order $order): JsonResponse
+    public function show(Order $order)
     {
         if ($order->user_id !== auth()->id()) {
             abort(403);
@@ -131,15 +116,5 @@ class CheckoutController extends Controller
         return response()->view('orders.show', [
             'order' => $order,
         ]);
-    }
-
-    public function success()
-    {
-        return view('checkout.success');
-    }
-
-    public function cancel()
-    {
-        return view('checkout.cancel');
     }
 }

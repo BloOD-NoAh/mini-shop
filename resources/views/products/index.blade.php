@@ -42,7 +42,7 @@
                             @if (!empty($product->category))
                                 <div class="text-xs inline-flex items-center px-2 py-0.5 rounded bg-gray-100 text-gray-700">{{ $product->category }}</div>
                             @endif
-                            <p class="text-gray-700">$ {{ number_format($product->price_cents / 100, 2) }}</p>
+                            <p class="text-gray-700">{{ $product->price_formatted }}</p>
                             <form action="{{ url('/cart/add/'.$product->id) }}" method="POST" class="flex items-center gap-2">
                                 @csrf
                                 <input type="number" name="quantity" value="1" min="1" class="w-20 rounded border-gray-300">

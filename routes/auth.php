@@ -10,8 +10,14 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::middleware('guest')->group(function () {
+    // Customer registration page (Inertia)
+    Route::get('customer/register', function () {
+        return Inertia::render('Auth/CustomerRegister');
+    })->name('customer.register');
+
     Route::get('register', [RegisteredUserController::class, 'create'])
         ->name('register');
 

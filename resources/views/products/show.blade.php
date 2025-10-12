@@ -23,7 +23,7 @@
                 </div>
                 <div class="space-y-4">
                     <h1 class="text-2xl font-semibold text-gray-900">{{ $product->name }}</h1>
-                    <p class="text-lg text-gray-800">$ {{ number_format($product->price_cents / 100, 2) }}</p>
+                    <p class="text-lg text-gray-800">{{ $product->price_formatted }}</p>
                     <p class="text-gray-700">{{ $product->description }}</p>
 
                     <form action="{{ url('/cart/add/'.$product->id) }}" method="POST" class="space-y-3">
@@ -39,4 +39,3 @@
         </div>
     </div>
 </x-app-layout>
-

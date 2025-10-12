@@ -7,11 +7,13 @@ use App\Http\Requests\UpdateCartRequest;
 use App\Models\CartItem;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Response;
 use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
-    public function view(): JsonResponse
+    public function view(): Response|JsonResponse
     {
         $userId = auth()->id();
 
@@ -34,7 +36,7 @@ class CartController extends Controller
         ]);
     }
 
-    public function add(AddToCartRequest $request, Product $product): JsonResponse
+    public function add(AddToCartRequest $request, Product $product): JsonResponse|RedirectResponse
     {
         $userId = auth()->id();
         $quantity = (int) $request->validated()['quantity'];
@@ -58,7 +60,7 @@ class CartController extends Controller
         return redirect()->back()->with('status', 'Added to cart');
     }
 
-    public function update(UpdateCartRequest $request, Product $product): JsonResponse
+    public function update(UpdateCartRequest $request, Product $product): JsonResponse|RedirectResponse
     {
         $userId = auth()->id();
         $quantity = (int) $request->validated()['quantity'];
@@ -85,7 +87,7 @@ class CartController extends Controller
         return redirect()->back()->with('status', 'Cart updated');
     }
 
-    public function remove(Product $product): JsonResponse
+    public function remove(Product $product): JsonResponse|RedirectResponse
     {
         $userId = auth()->id();
 

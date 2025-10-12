@@ -19,7 +19,7 @@
                         <div class="text-gray-700">Status</div>
                         <div class="font-medium text-gray-900">{{ ucfirst($order->status) }}</div>
                     </div>
-                    <div class="text-lg font-semibold">Total: $ {{ number_format($order->total_cents / 100, 2) }}</div>
+                    <div class="text-lg font-semibold">Total: {{ $order->total_formatted }}</div>
                 </div>
 
                 <div class="divide-y">
@@ -34,7 +34,7 @@
                                     <div class="text-gray-700">Qty: {{ $item->quantity }}</div>
                                 </div>
                             </div>
-                            <div class="text-gray-900">$ {{ number_format($item->unit_price_cents / 100, 2) }}</div>
+                            <div class="text-gray-900">{{ $item->unit_price_formatted }}</div>
                         </div>
                     @endforeach
                 </div>
@@ -42,4 +42,3 @@
         </div>
     </div>
 </x-app-layout>
-

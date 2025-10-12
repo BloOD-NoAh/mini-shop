@@ -13,15 +13,29 @@
                 <a href="{{ url('/') }}" class="text-lg font-semibold text-gray-900">Mini Shop</a>
                 <a href="{{ url('/cart') }}" class="text-gray-700 hover:text-gray-900">Cart</a>
                 @auth
-                    <a href="{{ url('/admin/products') }}" class="text-gray-700 hover:text-gray-900">Admin</a>
+                    @if (auth()->user()->is_admin ?? false)
+                        <a href="{{ route('admin.dashboard') }}" class="text-gray-700 hover:text-gray-900">Admin</a>
+                    @endif
                 @endauth
             </div>
             <div class="flex items-center gap-4">
                 @auth
                     <span class="text-gray-700">{{ auth()->user()->name }}</span>
+                    @if (Route::has('profile.edit'))
+                        <a href="{{ route('profile.edit') }}" class="text-gray-700 hover:text-gray-900">Profile</a>
+                    @endif
+                    @if (Route::has('logout'))
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="text-gray-700 hover:text-gray-900">Logout</button>
+                        </form>
+                    @endif
                 @else
                     @if (Route::has('login'))
                         <a href="{{ route('login') }}" class="text-gray-700 hover:text-gray-900">Login</a>
+                    @endif
+                    @if (Route::has('admin.login'))
+                        <a href="{{ route('admin.login') }}" class="text-gray-700 hover:text-gray-900">Admin Login</a>
                     @endif
                 @endauth
             </div>
@@ -37,6 +51,22 @@
     @endisset
 
     <main>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+            @if (session('status'))
+                <div class="mb-4 p-4 rounded bg-green-100 text-green-800">
+                    {{ session('status') }}
+                </div>
+            @endif
+            @if ($errors->any())
+                <div class="mb-4 p-4 rounded bg-red-100 text-red-800">
+                    <ul class="list-disc ml-5">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+        </div>
         {{ $slot }}
     </main>
 </body>

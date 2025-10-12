@@ -28,7 +28,7 @@
                                     @endif
                                     <div>
                                         <a href="{{ url('/products/'.$item->product->slug) }}" class="font-medium text-gray-900 hover:text-indigo-600">{{ $item->product->name }}</a>
-                                        <div class="text-gray-700">$ {{ number_format($item->product->price_cents / 100, 2) }}</div>
+                                        <div class="text-gray-700">{{ $item->product->price_formatted }}</div>
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-3">
@@ -48,7 +48,7 @@
                     </div>
 
                     <div class="mt-6 flex items-center justify-between">
-                        <div class="text-lg font-semibold">Subtotal: $ {{ number_format($subtotal_cents / 100, 2) }}</div>
+                        <div class="text-lg font-semibold">Subtotal: {{ money($subtotal_cents) }}</div>
                         <a href="{{ url('/checkout') }}" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Checkout</a>
                     </div>
                 @endif

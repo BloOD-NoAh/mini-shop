@@ -5,18 +5,20 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\Admin\ProductAdminController;
+use App\Http\Controllers\Admin\Auth\AdminLoginController;
+use App\Http\Controllers\Admin\AdminUserController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 // Public product routes
-Route::get('/', [ProductController::class, 'index']);
+Route::get('/', [ProductController::class, 'index'])->name('home');
 Route::get('/products/{product:slug}', [ProductController::class, 'show']);
 Route::get('/search', [ProductController::class, 'search']);
 Route::get('/category/{name}', [ProductController::class, 'category']);
 
 Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
+    return redirect('/');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -26,21 +28,30 @@ Route::middleware('auth')->group(function () {
     Route::post('/cart/update/{product}', [CartController::class, 'update']);
     Route::delete('/cart/remove/{product}', [CartController::class, 'remove']);
 
-    // Checkout
-    Route::get('/checkout', [CheckoutController::class, 'page']);
-    Route::post('/checkout', [CheckoutController::class, 'checkout']);
-    Route::post('/checkout/confirm', [CheckoutController::class, 'confirm']);
-    Route::get('/checkout/success', [CheckoutController::class, 'success']);
-    Route::get('/checkout/cancel', [CheckoutController::class, 'cancel']);
-    Route::get('/orders/{order}', [CheckoutController::class, 'show']);
+    // Checkout (Inertia + Stripe intent)
+    Route::get('/checkout', [CheckoutController::class, 'create'])->name('checkout.create');
+    Route::post('/checkout/confirm', [CheckoutController::class, 'confirm'])->name('checkout.confirm');
+    Route::get('/orders/{order}', [CheckoutController::class, 'show'])->name('orders.show');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Admin product resource (auth + is_admin gate)
+// Admin auth
+Route::middleware('guest')->group(function () {
+    Route::get('/admin/login', [AdminLoginController::class, 'create'])->name('admin.login');
+    Route::post('/admin/login', [AdminLoginController::class, 'store'])->name('admin.login.store');
+});
+
+// Admin area (auth + is_admin gate)
 Route::middleware(['auth', 'can:is_admin'])->group(function () {
+    Route::view('/admin', 'admin.dashboard')->name('admin.dashboard');
+    Route::resource('/admin/admins', AdminUserController::class)->parameters([
+        'admins' => 'admin'
+    ])->except(['show']);
+    Route::view('/admin/sales', 'admin.sales')->name('admin.sales');
+    Route::view('/admin/customers', 'admin.customers')->name('admin.customers');
     Route::resource('/admin/products', ProductAdminController::class)->except(['show']);
 });
 

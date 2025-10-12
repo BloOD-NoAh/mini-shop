@@ -26,5 +26,17 @@ class OrderItem extends Model
     {
         return $this->belongsTo(Product::class);
     }
-}
 
+    public function getUnitPriceFormattedAttribute(): string
+    {
+        $currency = config('stripe.currency', 'usd');
+        $symbol = match (strtolower((string) $currency)) {
+            'usd' => '$',
+            'eur' => '€',
+            'gbp' => '£',
+            'jpy' => '¥',
+            default => strtoupper((string) $currency).' ',
+        };
+        return $symbol.' '.number_format(((int) $this->unit_price_cents) / 100, 2);
+    }
+}

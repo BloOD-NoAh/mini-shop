@@ -43,5 +43,17 @@ class Order extends Model
         $this->total_cents = $this->computeTotalCents();
         $this->save();
     }
-}
 
+    public function getTotalFormattedAttribute(): string
+    {
+        $currency = config('stripe.currency', 'usd');
+        $symbol = match (strtolower((string) $currency)) {
+            'usd' => '$',
+            'eur' => '€',
+            'gbp' => '£',
+            'jpy' => '¥',
+            default => strtoupper((string) $currency).' ',
+        };
+        return $symbol.' '.number_format(((int) $this->total_cents) / 100, 2);
+    }
+}

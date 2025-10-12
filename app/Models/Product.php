@@ -29,4 +29,17 @@ class Product extends Model
     {
         return $this->hasMany(CartItem::class);
     }
+
+    public function getPriceFormattedAttribute(): string
+    {
+        $currency = config('stripe.currency', 'usd');
+        $symbol = match (strtolower((string) $currency)) {
+            'usd' => '$',
+            'eur' => '€',
+            'gbp' => '£',
+            'jpy' => '¥',
+            default => strtoupper((string) $currency).' ',
+        };
+        return $symbol.' '.number_format(((int) $this->price_cents) / 100, 2);
+    }
 }

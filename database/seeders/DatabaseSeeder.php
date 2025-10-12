@@ -24,6 +24,9 @@ class DatabaseSeeder extends Seeder
         // Seed products
         $this->call(ProductSeeder::class);
 
+        // Ensure an admin account exists
+        $this->call(AdminSeeder::class);
+
         // Promote ADMIN_EMAIL to admin if column exists
         $adminEmail = env('ADMIN_EMAIL');
         if ($adminEmail) {
