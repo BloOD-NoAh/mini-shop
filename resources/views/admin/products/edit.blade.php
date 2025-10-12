@@ -4,7 +4,7 @@
     </x-slot>
 
     <div class="py-6">
-        <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
+        <div class="container-narrow">
             @if (session('status'))
                 <div class="mb-4 p-4 rounded bg-green-100 text-green-800">{{ session('status') }}</div>
             @endif
@@ -19,38 +19,52 @@
                 </div>
             @endif
 
-            <form action="{{ url('/admin/products/'.$product->id) }}" method="POST" enctype="multipart/form-data" class="bg-white shadow rounded p-6 space-y-4">
+            <form action="{{ url('/admin/products/'.$product->id) }}" method="POST" enctype="multipart/form-data" class="card space-y-4">
                 @csrf
                 @method('PUT')
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Name</label>
-                    <input name="name" value="{{ old('name', $product->name) }}" class="mt-1 w-full rounded border-gray-300" required>
+                    <label class="input-label">Name</label>
+                    <input name="name" value="{{ old('name', $product->name) }}" class="input-field" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Slug</label>
-                    <input name="slug" value="{{ old('slug', $product->slug) }}" class="mt-1 w-full rounded border-gray-300" required>
+                    <label class="input-label">Slug</label>
+                    <input name="slug" value="{{ old('slug', $product->slug) }}" class="input-field" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Description</label>
-                    <textarea name="description" class="mt-1 w-full rounded border-gray-300" rows="4">{{ old('description', $product->description) }}</textarea>
+                    <label class="input-label">Description</label>
+                    <textarea name="description" class="input-field" rows="4">{{ old('description', $product->description) }}</textarea>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Price (cents)</label>
-                        <input type="number" name="price_cents" value="{{ old('price_cents', $product->price_cents) }}" min="0" class="mt-1 w-full rounded border-gray-300" required>
+                        <label class="input-label">Price</label>
+                        <input type="number" name="price_cents" value="{{ old('price_cents', number_format(((int) $product->price_cents)/100, 2, '.', '')) }}" min="0" step="0.01" class="input-field">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Stock</label>
-                        <input type="number" name="stock" value="{{ old('stock', $product->stock) }}" min="0" class="mt-1 w-full rounded border-gray-300" required>
+                        <label class="input-label">Stock</label>
+                        <input type="number" name="stock" value="{{ old('stock', $product->stock) }}" min="0" class="input-field" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Category</label>
-                        <input name="category" value="{{ old('category', $product->category) }}" class="mt-1 w-full rounded border-gray-300">
+                        <label class="input-label">Category</label>
+                        <input name="category" value="{{ old('category', $product->category) }}" class="input-field">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="input-label">Net Price</label>
+                        <input type="number" name="net_price_cents" value="{{ old('net_price_cents', $product->net_price_cents) }}" min="0" step="0.01" class="input-field">
+                    </div>
+                    <div>
+                        <label class="input-label">Tax</label>
+                        <input type="number" name="tax_cents" value="{{ old('tax_cents', $product->tax_cents) }}" min="0" step="0.01" class="input-field">
+                    </div>
+                    <div>
+                        <label class="input-label">Selling Price</label>
+                        <input type="number" name="selling_price_cents" value="{{ old('selling_price_cents', $product->selling_price_cents) }}" min="0" step="0.01" class="input-field">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Image</label>
-                    <input type="file" name="image" accept="image/*" class="mt-1 w-full rounded border-gray-300">
+                    <label class="input-label">Image</label>
+                    <input type="file" name="image" accept="image/*" class="input-field">
                     @if ($product->image_path)
                         <div class="mt-2">
                             <img src="{{ asset($product->image_path) }}" alt="{{ $product->name }}" class="w-32 h-32 object-cover rounded">
@@ -58,10 +72,14 @@
                     @endif
                 </div>
                 <div class="flex items-center justify-end gap-2">
-                    <a href="{{ url('/admin/products') }}" class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200">Cancel</a>
-                    <button class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Save</button>
+                    <a href="{{ url('/admin/products') }}" class="btn-muted">Cancel</a>
+                    <button class="btn-primary">Save</button>
                 </div>
             </form>
         </div>
     </div>
 </x-admin-layout>
+
+
+
+

@@ -20,10 +20,13 @@ class UpdateProductRequest extends FormRequest
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'slug' => ['sometimes', 'required', 'string', 'max:255', 'unique:products,slug,' . $productId],
             'description' => ['nullable', 'string'],
-            'price_cents' => ['sometimes', 'required', 'integer', 'min:0'],
+            'price_cents' => ['sometimes', 'required', 'numeric', 'min:0'],
             'stock' => ['sometimes', 'required', 'integer', 'min:0'],
             'category' => ['nullable', 'string', 'max:255'],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
+            'net_price_cents' => ['sometimes','required','numeric','min:0'],
+            'tax_cents' => ['sometimes','required','numeric','min:0'],
+            'selling_price_cents' => ['sometimes','required','numeric','min:0'],
         ];
     }
 }

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Stripe\Stripe;
 use Stripe\PaymentIntent;
+use App\Models\PaymentInfo;
 
 class CheckoutController extends Controller
 {
@@ -96,6 +97,18 @@ class CheckoutController extends Controller
             $order->recalculateTotal();
             CartItem::where('user_id', $user->id)->delete();
         });
+
+        // Attach payment info to order if webhook already created it
+        $transactionId = $data['paymentIntentId'];
+        PaymentInfo::updateOrCreate(
+            ['transaction_id' => $transactionId],
+            [
+                'order_id' => $order->id,
+                'provider' => 'stripe',
+                'amount' => $order->total_cents,
+                'status' => 'processing',
+            ]
+        );
 
         return redirect()->route('orders.show', $order->id)
             ->with('status', 'Payment successful');

@@ -1,3 +1,20 @@
+@import './components.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom product and search styles */
+@layer components {
+  /* Center product cards within the grid and center their text */
+  .container-wide > .grid {
+    justify-items: center;
+  }
+  .container-wide > .grid > .card .p-4 {
+    text-align: center;
+  }
+
+  /* Make search input more visible with border and hover/focus */
+  form[action*="/search"] input[name="q"] {
+    @apply input-field border-2 border-gray-300 hover:border-primary focus:border-primary focus:ring-primary transition-colors;
+  }
+}

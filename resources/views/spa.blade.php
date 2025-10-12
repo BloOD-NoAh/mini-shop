@@ -6,9 +6,10 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'Mini Shop') }}</title>
     @vite(['resources/css/app.css','resources/js/spa.js'])
-</head>
-<body class="min-h-screen bg-gray-100">
+  <script>(function(){try{const s=localStorage.getItem("theme");const p=window.matchMedia("(prefers-color-scheme: dark)").matches;if((s==="dark")||(!s&&p)){document.documentElement.classList.add("dark");}else{document.documentElement.classList.remove("dark");}}catch(e){}})();</script>\n</head>
+<body class="layout-standard">
     <div id="app"></div>
 </body>
 </html>
+
 

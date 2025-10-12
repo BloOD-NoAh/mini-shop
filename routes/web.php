@@ -4,9 +4,11 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\Admin\ProductAdminController;
 use App\Http\Controllers\Admin\Auth\AdminLoginController;
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Admin\AdminSalesController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -50,7 +52,8 @@ Route::middleware(['auth', 'can:is_admin'])->group(function () {
     Route::resource('/admin/admins', AdminUserController::class)->parameters([
         'admins' => 'admin'
     ])->except(['show']);
-    Route::view('/admin/sales', 'admin.sales')->name('admin.sales');
+    Route::get('/admin/sales', [AdminSalesController::class, 'index'])->name('admin.sales');
+    Route::get('/admin/sales/export', [AdminSalesController::class, 'export'])->name('admin.sales.export');
     Route::view('/admin/customers', 'admin.customers')->name('admin.customers');
     Route::resource('/admin/products', ProductAdminController::class)->except(['show']);
 });
@@ -61,3 +64,6 @@ Route::get('/app/{any?}', function () {
 })->where('any', '.*');
 
 require __DIR__.'/auth.php';
+
+// Stripe webhook endpoint
+Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle'])->name('stripe.webhook');

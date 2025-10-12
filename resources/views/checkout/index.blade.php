@@ -4,19 +4,19 @@
     </x-slot>
 
     <div class="py-6">
-        <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white shadow rounded p-6 space-y-4">
+        <div class="container-narrow">
+            <div class="card space-y-4">
                 <div class="text-lg">Total: $ {{ number_format($subtotal_cents / 100, 2) }}</div>
                 <div id="status" class="hidden p-3 rounded"></div>
 
                 <div id="stripe-area" class="space-y-3" style="display:none;">
                     <div id="payment-element"></div>
-                    <button id="pay-btn" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Pay</button>
+                    <button id="pay-btn" class="btn-primary">Pay</button>
                 </div>
 
                 <div id="mock-area" style="display:none;">
-                    <p class="text-gray-700 mb-3">Stripe not configured. Using mock payment.</p>
-                    <button id="mock-pay" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Mock Pay</button>
+                    <p class="text-gray-700 dark:text-gray-300 mb-3">Stripe not configured. Using mock payment.</p>
+                    <button id="mock-pay" class="btn-primary">Mock Pay</button>
                 </div>
             </div>
         </div>
@@ -82,4 +82,5 @@
         })();
     </script>
 </x-app-layout>
+
 

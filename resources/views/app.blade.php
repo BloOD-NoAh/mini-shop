@@ -14,8 +14,9 @@
         @routes
         @vite(['resources/js/app.js', "resources/js/Pages/{$page['component']}.vue"])
         @inertiaHead
-    </head>
-    <body class="font-sans antialiased">
+            <script>(function(){try{const s=localStorage.getItem("theme");const p=window.matchMedia("(prefers-color-scheme: dark)").matches;if((s==="dark")||(!s&&p)){document.documentElement.classList.add("dark");}else{document.documentElement.classList.remove("dark");}}catch(e){}})();</script>\n    </head>
+    <body class="font-sans antialiased layout-standard">
         @inertia
     </body>
 </html>
+

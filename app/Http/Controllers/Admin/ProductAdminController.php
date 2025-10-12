@@ -34,6 +34,13 @@ class ProductAdminController extends Controller
     {
         $data = $request->validated();
 
+        // Convert storefront price to cents (from decimal inputs)
+        if (isset($data['selling_price_cents'])) {
+            $data['price_cents'] = (int) round(((float) $data['selling_price_cents']) * 100);
+        } elseif (isset($data['price_cents'])) {
+            $data['price_cents'] = (int) round(((float) $data['price_cents']) * 100);
+        }
+
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('products', 'public');
             $data['image_path'] = 'storage/'.$path;
@@ -59,6 +66,13 @@ class ProductAdminController extends Controller
     public function update(UpdateProductRequest $request, Product $product)
     {
         $data = $request->validated();
+
+        if (isset($data['selling_price_cents'])) {
+            $data['price_cents'] = (int) round(((float) $data['selling_price_cents']) * 100);
+        } elseif (isset($data['price_cents'])) {
+            $data['price_cents'] = (int) round(((float) $data['price_cents']) * 100);
+        }
+
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('products', 'public');
             $data['image_path'] = 'storage/'.$path;

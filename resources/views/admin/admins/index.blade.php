@@ -2,12 +2,12 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">Admins</h2>
-            <a href="{{ route('admins.create') }}" class="px-3 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Add Admin</a>
+            <a href="{{ route('admins.create') }}" class="btn-primary">Add Admin</a>
         </div>
     </x-slot>
 
     <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="container-wide">
             @if (session('status'))
                 <div class="mb-4 p-4 rounded bg-green-100 text-green-800">{{ session('status') }}</div>
             @endif
@@ -21,30 +21,30 @@
                 </div>
             @endif
 
-            <div class="bg-white shadow rounded overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+            <div class="card overflow-x-auto">
+                <table class="table">
+                    <thead class="thead">
                         <tr>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                            <th class="th">ID</th>
+                            <th class="th">Name</th>
+                            <th class="th">Email</th>
+                            <th class="th">Created</th>
                             <th class="px-4 py-3"></th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody class="tbody">
                         @foreach ($admins as $admin)
                             <tr>
-                                <td class="px-4 py-2 text-sm text-gray-700">{{ $admin->id }}</td>
-                                <td class="px-4 py-2 text-sm text-gray-900">{{ $admin->name }}</td>
-                                <td class="px-4 py-2 text-sm text-gray-900">{{ $admin->email }}</td>
-                                <td class="px-4 py-2 text-sm text-gray-900">{{ $admin->created_at?->format('Y-m-d') }}</td>
+                                <td class="td">{{ $admin->id }}</td>
+                                <td class="td">{{ $admin->name }}</td>
+                                <td class="td">{{ $admin->email }}</td>
+                                <td class="td">{{ $admin->created_at?->format('Y-m-d') }}</td>
                                 <td class="px-4 py-2 text-right space-x-2">
-                                    <a href="{{ route('admins.edit', $admin) }}" class="px-3 py-1 bg-gray-800 text-white text-sm rounded hover:bg-gray-900">Edit</a>
+                                    <a href="{{ route('admins.edit', $admin) }}" class="btn-muted">Edit</a>
                                     <form action="{{ route('admins.destroy', $admin) }}" method="POST" class="inline" onsubmit="return confirm('Delete this admin?')">
                                         @csrf
                                         @method('DELETE')
-                                        <button class="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700">Delete</button>
+                                        <button class="btn-danger">Delete</button>
                                     </form>
                                 </td>
                             </tr>
@@ -57,4 +57,5 @@
         </div>
     </div>
 </x-admin-layout>
+
 

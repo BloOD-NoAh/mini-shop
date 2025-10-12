@@ -4,11 +4,12 @@
     </x-slot>
 
     <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white shadow rounded p-6 text-gray-700">
+        <div class="container-wide">
+            <div class="card p-6 text-gray-700 dark:text-gray-300">
                 Customer list goes here.
             </div>
         </div>
     </div>
 </x-admin-layout>
+
 

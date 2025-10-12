@@ -4,16 +4,16 @@
     <div v-if="flash" class="mb-4 p-4 rounded bg-green-100 text-green-800">{{ flash }}</div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      <div v-for="p in products.data" :key="p.id" class="bg-white shadow rounded overflow-hidden">
+      <div v-for="p in products.data" :key="p.id" class="card overflow-hidden">
         <img v-if="p.image_path" :src="asset(p.image_path)" :alt="p.name" class="w-full h-40 object-cover" />
-        <div v-else class="w-full h-40 bg-gray-100 flex items-center justify-center text-gray-400">No Image</div>
+        <div v-else class="w-full h-40 bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400">No Image</div>
         <div class="p-4 space-y-2">
-          <RouterLink :to="`/app/products/${p.slug}`" class="block font-semibold text-gray-900 hover:text-indigo-600">{{ p.name }}</RouterLink>
-          <p class="text-gray-700">$ {{ formatPrice(p.price_cents) }}</p>
+          <RouterLink :to="`/app/products/${p.slug}`" class="block font-semibold hover:text-primary">{{ p.name }}</RouterLink>
+          <p class="text-gray-700 dark:text-gray-300">$ {{ formatPrice(p.price_cents) }}</p>
           <form @submit.prevent="addToCart(p.id)">
             <div class="flex items-center gap-2">
-              <input v-model.number="qty[p.id]" type="number" min="1" class="w-20 rounded border-gray-300" />
-              <button class="px-3 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700">Add to Cart</button>
+              <input v-model.number="qty[p.id]" type="number" min="1" class="w-20 input-field" />
+              <button class="btn-primary">Add to Cart</button>
             </div>
           </form>
         </div>
@@ -75,4 +75,5 @@ async function addToCart(productId) {
 
 onMounted(() => fetchProducts());
 </script>
+
 

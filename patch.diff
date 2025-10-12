@@ -1,0 +1,28 @@
+*** Begin Patch
+*** Add File: database/migrations/2025_10_12_010000_add_pricing_columns_to_products_table.php
++<?php
++
++use Illuminate\\Database\\Migrations\\Migration;
++use Illuminate\\Database\\Schema\\Blueprint;
++use Illuminate\\Support\\Facades\\Schema;
++
++return new class extends Migration
++{
++    public function up(): void
++    {
++        Schema::table('products', function (Blueprint $table) {
++            $table->integer('net_price_cents')->nullable()->after('price_cents');
++            $table->integer('tax_cents')->nullable()->after('net_price_cents');
++            $table->integer('selling_price_cents')->nullable()->after('tax_cents');
++        });
++    }
++
++    public function down(): void
++    {
++        Schema::table('products', function (Blueprint $table) {
++            $table->dropColumn(['net_price_cents', 'tax_cents', 'selling_price_cents']);
++        });
++    }
++};
++
+*** End Patch

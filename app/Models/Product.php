@@ -18,6 +18,9 @@ class Product extends Model
         'stock',
         'image_path',
         'category',
+        'net_price_cents',
+        'tax_cents',
+        'selling_price_cents',
     ];
 
     public function orderItems(): HasMany
@@ -43,3 +46,4 @@ class Product extends Model
         return $symbol.' '.number_format(((int) $this->price_cents) / 100, 2);
     }
 }
+

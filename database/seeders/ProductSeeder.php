@@ -26,6 +26,9 @@ class ProductSeeder extends Seeder
         ];
 
         foreach ($samples as [$name, $category, $price, $desc, $image]) {
+            $net = (int) round($price * 0.9);
+            $tax = $price - $net;
+
             Product::updateOrCreate(
                 ['slug' => Str::slug($name)],
                 [
@@ -35,8 +38,13 @@ class ProductSeeder extends Seeder
                     'price_cents' => $price,
                     'stock' => 25,
                     'image_path' => $image,
+                    'net_price_cents' => round(($price / 100) * 0.9, 2),
+                    'tax_cents' => round(($price / 100) - round(($price / 100) * 0.9, 2), 2),
+                    'selling_price_cents' => round($price / 100, 2),
                 ]
             );
         }
     }
 }
+
+

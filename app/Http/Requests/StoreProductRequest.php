@@ -18,10 +18,15 @@ class StoreProductRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', 'unique:products,slug'],
             'description' => ['nullable', 'string'],
-            'price_cents' => ['required', 'integer', 'min:0'],
+            'price_cents' => ['nullable', 'numeric', 'min:0'],
             'stock' => ['required', 'integer', 'min:0'],
             'category' => ['nullable', 'string', 'max:255'],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
+            'net_price_cents' => ['required','numeric','min:0'],
+            'tax_cents' => ['required','numeric','min:0'],
+            'selling_price_cents' => ['required','numeric','min:0'],
         ];
     }
 }
+
+
