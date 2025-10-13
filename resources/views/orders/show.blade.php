@@ -22,6 +22,24 @@
                     <div class="text-lg font-semibold">Total: {{ $order->total_formatted }}</div>
                 </div>
 
+                @if ($order->shipping_address)
+                    <div class="mt-2 p-3 rounded bg-gray-50">
+                        <div class="text-gray-700 mb-1">Shipping Address</div>
+                        <div class="text-gray-900">
+                            {{ $order->shipping_address['full_name'] ?? '' }}<br>
+                            {{ $order->shipping_address['line1'] ?? '' }}<br>
+                            @if (!empty($order->shipping_address['line2']))
+                                {{ $order->shipping_address['line2'] }}<br>
+                            @endif
+                            {{ $order->shipping_address['city'] ?? '' }}@if(!empty($order->shipping_address['state'])), {{ $order->shipping_address['state'] }}@endif {{ $order->shipping_address['postal_code'] ?? '' }}<br>
+                            {{ $order->shipping_address['country'] ?? '' }}
+                            @if (!empty($order->shipping_address['phone']))
+                                <br>Phone: {{ $order->shipping_address['phone'] }}
+                            @endif
+                        </div>
+                    </div>
+                @endif
+
                 <div class="divide-y">
                     @foreach ($order->items as $item)
                         <div class="py-3 flex items-center justify-between">

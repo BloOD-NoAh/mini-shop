@@ -11,6 +11,7 @@ use Inertia\Inertia;
 use Stripe\Stripe;
 use Stripe\PaymentIntent;
 use App\Models\PaymentInfo;
+use Inertia\Response as InertiaResponse;
 
 class CheckoutController extends Controller
 {
@@ -53,11 +54,14 @@ class CheckoutController extends Controller
             'unit_price_cents' => (int) $i->product->price_cents,
         ])->values();
 
+        $addresses = $user->addresses()->get(['id','full_name','line1','line2','city','state','postal_code','country','phone','is_default']);
+
         return Inertia::render('Checkout/Pay', [
             'clientSecret' => $intent->client_secret,
             'amountCents' => $amountCents,
             'currency' => $currency,
             'cart' => $cart,
+            'addresses' => $addresses,
         ]);
     }
 
@@ -65,9 +69,14 @@ class CheckoutController extends Controller
     {
         $data = $request->validate([
             'paymentIntentId' => ['required', 'string'],
+            'address_id' => ['required', 'integer', 'exists:addresses,id'],
         ]);
 
         $user = $request->user();
+        $address = $user->addresses()->where('id', $data['address_id'])->first();
+        if (!$address) {
+            return redirect()->back()->withErrors(['address_id' => 'Invalid address selected']);
+        }
         $cartItems = CartItem::query()
             ->where('user_id', $user->id)
             ->with('product')
@@ -78,11 +87,21 @@ class CheckoutController extends Controller
         }
 
         $order = null;
-        DB::transaction(function () use ($user, $cartItems, &$order): void {
+        DB::transaction(function () use ($user, $cartItems, &$order, $address): void {
             $order = Order::create([
                 'user_id' => $user->id,
                 'status' => 'paid',
                 'total_cents' => 0,
+                'shipping_address' => [
+                    'full_name' => $address->full_name,
+                    'line1' => $address->line1,
+                    'line2' => $address->line2,
+                    'city' => $address->city,
+                    'state' => $address->state,
+                    'postal_code' => $address->postal_code,
+                    'country' => $address->country,
+                    'phone' => $address->phone,
+                ],
             ]);
 
             foreach ($cartItems as $cartItem) {
@@ -114,7 +133,7 @@ class CheckoutController extends Controller
             ->with('status', 'Payment successful');
     }
 
-    public function show(Order $order)
+    public function show(Order $order): InertiaResponse|\Illuminate\Http\JsonResponse
     {
         if ($order->user_id !== auth()->id()) {
             abort(403);
@@ -126,8 +145,29 @@ class CheckoutController extends Controller
             return response()->json($order);
         }
 
-        return response()->view('orders.show', [
+        return Inertia::render('Orders/Show', [
             'order' => $order,
+        ]);
+    }
+
+    public function index(): InertiaResponse
+    {
+        $orders = Order::query()
+            ->where('user_id', auth()->id())
+            ->latest('id')
+            ->get(['id','status','total_cents','created_at']);
+
+        // Append formatted total for convenience
+        $orders = $orders->map(fn ($o) => [
+            'id' => $o->id,
+            'status' => $o->status,
+            'total_cents' => (int) $o->total_cents,
+            'total_formatted' => $o->total_formatted,
+            'created_at' => $o->created_at?->toDateTimeString(),
+        ]);
+
+        return Inertia::render('Orders/Index', [
+            'orders' => $orders,
         ]);
     }
 }

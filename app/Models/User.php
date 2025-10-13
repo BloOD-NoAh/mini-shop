@@ -46,4 +46,14 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function addresses()
+    {
+        return $this->hasMany(\App\Models\Address::class);
+    }
+
+    public function defaultAddress()
+    {
+        return $this->hasOne(\App\Models\Address::class)->where('is_default', true);
+    }
 }

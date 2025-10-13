@@ -4,12 +4,26 @@
       <h2 class="font-semibold text-xl text-gray-800 leading-tight">Checkout</h2>
     </template>
 
-    <div class="py-6">
-      <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
-        <div class="bg-white shadow rounded p-6 space-y-4">
-          <div class="text-lg">
-            Total: $ {{ (amountCents / 100).toFixed(2) }} {{ (currency || '').toUpperCase() }}
+  <div class="py-6">
+    <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
+      <div class="bg-white shadow rounded p-6 space-y-4">
+        <div v-if="addresses?.length" class="space-y-2">
+          <label class="font-medium">Shipping Address</label>
+          <select v-model="selectedAddressId" class="w-full border rounded px-3 py-2">
+            <option disabled value="">Select an address</option>
+            <option v-for="a in addresses" :key="a.id" :value="a.id">
+              {{ a.full_name }} — {{ a.line1 }}, {{ a.city }} {{ a.postal_code }} ({{ a.country }})
+              <span v-if="a.is_default"> • Default</span>
+            </option>
+          </select>
+          <div class="text-sm">
+            <a href="/addresses" class="text-indigo-600 underline">Manage addresses</a>
           </div>
+        </div>
+
+        <div class="text-lg">
+          Total: $ {{ (amountCents / 100).toFixed(2) }} {{ (currency || '').toUpperCase() }}
+        </div>
 
           <div v-if="error" class="p-3 rounded bg-red-100 text-red-800">{{ error }}</div>
           <div v-if="message" class="p-3 rounded bg-green-100 text-green-800">{{ message }}</div>
@@ -17,7 +31,7 @@
           <div id="payment-element" class="mt-2"></div>
 
           <button
-            :disabled="processing || !ready"
+            :disabled="processing || !ready || !selectedAddressId"
             class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-60"
             @click="payNow"
           >
@@ -53,6 +67,7 @@ const props = defineProps({
   amountCents: { type: Number, required: true },
   currency: { type: String, required: true },
   cart: { type: Array, required: true },
+  addresses: { type: Array, default: () => [] },
 });
 
 const error = ref('');
@@ -91,12 +106,17 @@ onMounted(async () => {
     const paymentEl = elements.create('payment');
     paymentEl.mount('#payment-element');
     ready.value = true;
+    if (props.addresses && props.addresses.length) {
+      const def = props.addresses.find(a => a.is_default) || props.addresses[0];
+      selectedAddressId.value = def?.id || null;
+    }
   } catch (e) {
     error.value = e?.message || 'Failed to initialize payments.';
   }
 });
 
-const form = useForm({ paymentIntentId: '' });
+const selectedAddressId = ref(null);
+const form = useForm({ paymentIntentId: '', address_id: null });
 
 async function payNow() {
   if (!stripe || !elements) return;
@@ -116,6 +136,7 @@ async function payNow() {
       return;
     }
     form.paymentIntentId = paymentIntent.id;
+    form.address_id = selectedAddressId.value;
     await form.post(route('checkout.confirm'), {
       preserveScroll: true,
       onError: (errs) => {
@@ -147,6 +168,7 @@ onMounted(async () => {
     if (!paymentIntent) return;
     if (paymentIntent.status === 'succeeded') {
       form.paymentIntentId = paymentIntent.id;
+      form.address_id = selectedAddressId.value;
       await form.post(route('checkout.confirm'), {
         preserveScroll: true,
         onError: (errs) => {

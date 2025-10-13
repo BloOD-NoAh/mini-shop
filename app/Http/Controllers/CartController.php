@@ -10,10 +10,12 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 
 class CartController extends Controller
 {
-    public function view(): Response|JsonResponse
+    public function view(): Response|JsonResponse|InertiaResponse
     {
         $userId = auth()->id();
 
@@ -30,9 +32,22 @@ class CartController extends Controller
 
         $subtotal = (int) $items->sum(fn ($i) => $i->product->price_cents * $i->quantity);
 
-        return response()->view('cart.view', [
-            'items' => $items,
-            'subtotal_cents' => $subtotal,
+        $cart = $items->map(fn ($i) => [
+            'product' => [
+                'id' => $i->product_id,
+                'name' => $i->product->name,
+                'slug' => $i->product->slug,
+                'image_path' => $i->product->image_path,
+                'price_cents' => (int) $i->product->price_cents,
+                'price_formatted' => $i->product->price_formatted,
+            ],
+            'quantity' => (int) $i->quantity,
+        ])->values();
+
+        return Inertia::render('Cart/Index', [
+            'items' => $cart,
+            'subtotalCents' => $subtotal,
+            'currency' => config('stripe.currency', 'usd'),
         ]);
     }
 

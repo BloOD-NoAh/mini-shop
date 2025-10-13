@@ -16,6 +16,7 @@ class Order extends Model
         'user_id',
         'status',
         'total_cents',
+        'shipping_address',
     ];
 
     public function user(): BelongsTo
@@ -62,4 +63,8 @@ class Order extends Model
         };
         return $symbol.' '.number_format(((int) $this->total_cents) / 100, 2);
     }
+
+    protected $casts = [
+        'shipping_address' => 'array',
+    ];
 }
