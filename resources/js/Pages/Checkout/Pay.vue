@@ -44,7 +44,11 @@
           <h3 class="font-medium mb-2">Cart</h3>
           <ul class="text-sm text-gray-800 list-disc ml-5 space-y-1">
             <li v-for="(i, idx) in cart" :key="idx">
-              {{ i.product.name }} × {{ i.quantity }} — $ {{ (i.unit_price_cents / 100).toFixed(2) }}
+              {{ i.product.name }}
+              <span v-if="i.variant?.attributes"> —
+                <span v-for="(val, key, aIdx) in i.variant.attributes" :key="key">{{ key }}: {{ val }}<span v-if="aIdx < Object.keys(i.variant.attributes).length - 1">, </span></span>
+              </span>
+              × {{ i.quantity }} — $ {{ (i.unit_price_cents / 100).toFixed(2) }}
             </li>
           </ul>
           <div class="mt-4">

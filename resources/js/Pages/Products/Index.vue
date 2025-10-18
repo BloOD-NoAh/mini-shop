@@ -26,6 +26,8 @@ function goPage(url) {
   if (!url) return;
   router.get(url, {}, { preserveState: true, replace: true });
 }
+
+// quantity is fixed at 1; input is disabled and a hidden field is submitted
 </script>
 
 <template>
@@ -37,6 +39,7 @@ function goPage(url) {
 
     <div class="py-6">
       <div class="container-wide">
+        <div v-if="$page.props.flash?.success" class="mb-4 p-3 rounded bg-green-100 text-green-800">{{ $page.props.flash.success }}</div>
         <div class="mb-6">
           <form @submit.prevent="submitSearch" class="flex items-center gap-2">
             <input v-model="query" type="text" placeholder="Search products..." class="input-field" />
@@ -67,10 +70,23 @@ function goPage(url) {
               <a :href="`/products/${product.slug}`" class="block font-semibold hover:text-primary">{{ product.name }}</a>
               <div v-if="product.category" class="badge-muted inline-block">{{ product.category }}</div>
               <p class="text-gray-700 dark:text-gray-300">{{ product.price_formatted }}</p>
-              <form :action="`/cart/add/${product.id}`" method="POST" class="flex items-center gap-2">
+              <template v-if="(product.variants_count || 0) > 0">
+                <a :href="`/products/${product.slug}`" class="btn-muted">View Options</a>
+              </template>
+              <form v-else :action="`/cart/add/${product.id}`" method="POST" class="flex items-center gap-2">
                 <input type="hidden" name="_token" :value="csrf" />
-                <input type="number" name="quantity" value="1" min="1" class="w-20 input-field">
-                <button type="submit" class="btn-primary">Add to Cart</button>
+                <div class="flex items-center gap-2">
+                  <button type="button" class="w-8 h-8 flex items-center justify-center border rounded-full font-bold text-lg bg-white hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800" @click="
+                    const input = $event.currentTarget.closest('form').querySelector('input[name=quantity]');
+                    input.value = String(Math.max(1, (parseInt(input.value||'1',10)-1)));
+                  ">−</button>
+                  <input type="number" name="quantity" value="1" min="1" class="w-14 input-field text-center">
+                  <button type="button" class="w-8 h-8 flex items-center justify-center border rounded-full font-bold text-lg bg-white hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800" @click="
+                    const input = $event.currentTarget.closest('form').querySelector('input[name=quantity]');
+                    input.value = String(Math.max(1, (parseInt(input.value||'1',10)+1)));
+                  ">+</button>
+                </div>
+                <button type="submit" class="btn-primary whitespace-nowrap">Add</button>
               </form>
             </div>
           </div>

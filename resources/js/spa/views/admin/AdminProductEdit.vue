@@ -22,11 +22,7 @@
         <label class="input-label">Description</label>
         <textarea v-model="form.description" class="input-field" rows="4" />
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div>
-          <label class="input-label">Price</label>
-          <input type="number" v-model.number="form.price_cents" min="0" class="input-field"   step="0.01" />
-        </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label class="input-label">Stock</label>
           <input type="number" v-model.number="form.stock" min="0" class="input-field" required />
@@ -50,6 +46,60 @@
         </div>
       </div>
       </div>
+      <div class="mt-6">
+        <div class="flex items-center justify-between mb-2">
+          <label class="input-label">Variants</label>
+          <button type="button" class="btn-muted" @click="addVariant">+ Add Variant</button>
+        </div>
+        <div class="space-y-4">
+          <div v-for="(v, idx) in variants" :key="idx" class="border rounded p-3 space-y-3">
+            <div class="grid grid-cols-1 md:grid-cols-6 gap-3 items-end">
+              <div>
+                <label class="input-label">SKU</label>
+                <input v-model="v.sku" class="input-field" />
+              </div>
+              <div>
+                <label class="input-label">Net Price</label>
+                <input type="number" step="0.01" min="0" v-model.number="v.net_price" class="input-field" />
+              </div>
+              <div>
+                <label class="input-label">Tax</label>
+                <input type="number" step="0.01" min="0" v-model.number="v.tax" class="input-field" />
+              </div>
+              <div>
+                <label class="input-label">Price</label>
+                <input type="number" step="0.01" min="0" v-model.number="v.price" class="input-field" />
+              </div>
+              <div>
+                <label class="input-label">Stock</label>
+                <input type="number" min="0" v-model.number="v.stock" class="input-field" />
+              </div>
+              <div class="flex justify-end">
+                <button type="button" class="btn-muted" @click="removeVariant(idx)">Remove</button>
+              </div>
+            </div>
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <div class="text-sm font-medium">Attributes</div>
+                <button type="button" class="btn-muted" @click="addAttr(v)">+ Add Attribute</button>
+              </div>
+              <div class="space-y-2">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-2" v-for="(a, aIdx) in v.attributes" :key="aIdx">
+                  <div class="md:col-span-2">
+                    <input class="input-field" placeholder="Key (e.g. color)" v-model="a.key" />
+                  </div>
+                  <div class="md:col-span-2">
+                    <input class="input-field" placeholder="Value (e.g. Red)" v-model="a.value" />
+                  </div>
+                  <div class="flex items-center">
+                    <button type="button" class="btn-muted" @click="v.attributes.splice(aIdx, 1)">Remove</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="flex items-center justify-end gap-2">
         <RouterLink to="/app/admin/products" class="btn-muted">Cancel</RouterLink>
         <button class="btn-primary">Save</button>
@@ -72,18 +122,49 @@ import { useRoute, useRouter } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 const id = route.params.id;
-const form = reactive({ name: '', slug: '', description: '', price_cents: 0, stock: 0, image_path: '', net_price_cents: 0, tax_cents: 0, selling_price_cents: 0 });
+const form = reactive({ name: '', slug: '', description: '', stock: 0, image_path: '', net_price_cents: 0, tax_cents: 0, selling_price_cents: 0, variants_json: '' });
 const errors = ref([]);
+const variants = ref([]);
 
 async function load() {
-  const res = await axios.get(`/admin/products`, { headers: { Accept: 'application/json' }, params: { page: 1 } });
-  const p = res.data.data.find(x => String(x.id) === String(id));
-  if (p) Object.assign(form, p);
+  const res = await axios.get(`/admin/products/${id}`, { headers: { Accept: 'application/json' } });
+  const p = res.data;
+  if (p) {
+    Object.assign(form, p);
+    // Build variants from product.variants (decimals preferred)
+    variants.value = (p.variants || []).map(v => ({
+      sku: v.sku || '',
+      net_price: v.net_price ?? (v.net_price_cents != null ? (v.net_price_cents/100) : null),
+      tax: v.tax ?? (v.tax_cents != null ? (v.tax_cents/100) : null),
+      price: v.price ?? (v.selling_price_cents != null ? (v.selling_price_cents/100) : (v.price_cents != null ? (v.price_cents/100) : null)),
+      stock: v.stock || 0,
+      attributes: Object.entries(v.attributes || {}).map(([key, value]) => ({ key, value })),
+    }));
+  }
 }
 
 async function submit() {
   errors.value = [];
   try {
+    form.variants_json = JSON.stringify(
+      variants.value
+        .map(v => {
+          const attrs = {};
+          (v.attributes||[]).forEach(a => { if ((a.key||'').trim() !== '') attrs[a.key] = a.value; });
+          const net = v.net_price == null || v.net_price === '' ? null : Number(v.net_price);
+          const tax = v.tax == null || v.tax === '' ? null : Number(v.tax);
+          const price = v.price == null || v.price === '' ? ((net != null || tax != null) ? ((net || 0) + (tax || 0)) : null) : Number(v.price);
+          return {
+            sku: v.sku || null,
+            attributes: attrs,
+            net_price: Number.isFinite(net) ? net : null,
+            tax: Number.isFinite(tax) ? tax : null,
+            price: Number.isFinite(price) ? price : null,
+            stock: Number.isFinite(v.stock) ? v.stock : 0,
+          };
+        })
+        .filter(x => (x.sku || Object.keys(x.attributes).length || x.price != null || x.stock))
+    );
     await axios.post(`/admin/products/${id}?_method=PUT`, form);
     router.push('/app/admin/products');
   } catch (e) {

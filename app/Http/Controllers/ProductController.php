@@ -13,7 +13,7 @@ class ProductController extends Controller
         $q = trim((string) $request->input('q')) ?: null;
         $category = $request->input('category');
 
-        $query = Product::query();
+        $query = Product::query()->withCount('variants');
         if ($q) {
             $query->where(function ($w) use ($q) {
                 $w->where('name', 'like', "%$q%")
@@ -47,12 +47,15 @@ class ProductController extends Controller
 
     public function show(Product $product)
     {
+        $product->load('variants');
+
         if (request()->wantsJson()) {
             return response()->json($product);
         }
 
         return Inertia::render('Products/Show', [
             'product' => $product,
+            'variants' => $product->variants,
         ]);
     }
 

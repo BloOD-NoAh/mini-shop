@@ -28,7 +28,7 @@ onMounted(() => {
 
 <template>
     <div>
-        <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+        <div class="min-h-screen bg-[rgb(46_95_50_/_10%)] dark:bg-gray-900">
             <nav
                 class="sticky top-0 z-20 border-b border-gray-100 bg-white/90 backdrop-blur dark:border-gray-700 dark:bg-gray-800/80"
             >

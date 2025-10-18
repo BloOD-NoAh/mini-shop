@@ -10,6 +10,8 @@ use App\Http\Controllers\Admin\ProductAdminController;
 use App\Http\Controllers\Admin\Auth\AdminLoginController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminSalesController;
+use App\Http\Controllers\Admin\CustomerAdminController;
+use App\Http\Controllers\Admin\OrderAdminController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -30,6 +32,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/cart/add/{product}', [CartController::class, 'add']);
     Route::post('/cart/update/{product}', [CartController::class, 'update']);
     Route::delete('/cart/remove/{product}', [CartController::class, 'remove']);
+    Route::post('/cart/update-item/{item}', [CartController::class, 'updateItem']);
+    Route::delete('/cart/remove-item/{item}', [CartController::class, 'removeItem']);
 
     // Checkout (Inertia + Stripe intent)
     Route::get('/checkout', [CheckoutController::class, 'create'])->name('checkout.create');
@@ -63,7 +67,15 @@ Route::middleware(['auth', 'can:is_admin'])->group(function () {
     ])->except(['show']);
     Route::get('/admin/sales', [AdminSalesController::class, 'index'])->name('admin.sales');
     Route::get('/admin/sales/export', [AdminSalesController::class, 'export'])->name('admin.sales.export');
-    Route::view('/admin/customers', 'admin.customers')->name('admin.customers');
+    Route::get('/admin/customers', [CustomerAdminController::class, 'index'])->name('admin.customers');
+    Route::get('/admin/customers/export', [CustomerAdminController::class, 'export'])->name('admin.customers.export');
+    Route::get('/admin/customers/{user}', [CustomerAdminController::class, 'show'])->name('admin.customers.show');
+    Route::get('/admin/customers/{user}/export-orders', [CustomerAdminController::class, 'exportOrders'])->name('admin.customers.exportOrders');
+    Route::get('/admin/orders', [OrderAdminController::class, 'index'])->name('admin.orders.index');
+    Route::get('/admin/orders/export', [OrderAdminController::class, 'export'])->name('admin.orders.export');
+    Route::get('/admin/orders/{order}', [OrderAdminController::class, 'show'])->name('admin.orders.show');
+    Route::put('/admin/orders/{order}', [OrderAdminController::class, 'update'])->name('admin.orders.update');
+    Route::post('/admin/orders/{order}/refund', [OrderAdminController::class, 'refund'])->name('admin.orders.refund');
     Route::resource('/admin/products', ProductAdminController::class)->except(['show']);
 });
 

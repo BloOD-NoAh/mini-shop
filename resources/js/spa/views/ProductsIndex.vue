@@ -12,8 +12,10 @@
           <p class="text-gray-700 dark:text-gray-300">$ {{ formatPrice(p.price_cents) }}</p>
           <form @submit.prevent="addToCart(p.id)">
             <div class="flex items-center gap-2">
-              <input v-model.number="qty[p.id]" type="number" min="1" class="w-20 input-field" />
-              <button class="btn-primary">Add to Cart</button>
+              <button type="button" class="w-8 h-8 flex items-center justify-center border rounded-full font-bold text-lg bg-white hover:bg-gray-50" @click="qty[p.id] = Math.max(1, Number(qty[p.id]||1) - 1)">−</button>
+              <input v-model.number="qty[p.id]" type="number" min="1" class="w-16 input-field text-center" />
+              <button type="button" class="w-8 h-8 flex items-center justify-center border rounded-full font-bold text-lg bg-white hover:bg-gray-50" @click="qty[p.id] = Math.max(1, Number(qty[p.id]||1) + 1)">+</button>
+              <button class="btn-primary whitespace-nowrap">Add</button>
             </div>
           </form>
         </div>
@@ -73,7 +75,17 @@ async function addToCart(productId) {
   }
 }
 
-onMounted(() => fetchProducts());
+onMounted(() => {
+  fetchProducts();
+  if (route.query?.added === '1') {
+    flash.value = 'Added to cart';
+    setTimeout(() => (flash.value = ''), 2000);
+    // clean query
+    const q = new URLSearchParams(route.query);
+    q.delete('added');
+    router.replace({ path: route.path, query: Object.fromEntries(q.entries()) });
+  }
+});
 </script>
 
 

@@ -59,6 +59,10 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M7 13l3 3 7-7"/></svg>
                 <span class="label">Sales</span>
             </a>
+            <a href="{{ route('admin.orders.index') }}" class="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 {{ request()->routeIs('admin.orders.*') ? 'bg-gray-100 dark:bg-gray-800 font-medium' : '' }}">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7h18M3 12h18M3 17h18"/></svg>
+                <span class="label">Orders</span>
+            </a>
             <a href="{{ route('admin.customers') }}" class="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 {{ request()->routeIs('admin.customers') ? 'bg-gray-100 dark:bg-gray-800 font-medium' : '' }}">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20a4 4 0 10-8 0M12 4a4 4 0 110 8 4 4 0 010-8zM19 8a3 3 0 110 6M5 14a3 3 0 110-6"/></svg>
                 <span class="label">Customers</span>

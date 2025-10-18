@@ -21,14 +21,24 @@ class CheckoutController extends Controller
 
         $cartItems = CartItem::query()
             ->where('user_id', $user->id)
-            ->with('product')
+            ->with(['product','variant'])
             ->get();
 
         if ($cartItems->isEmpty()) {
             abort(400, 'Cart is empty');
         }
 
-        $amountCents = (int) $cartItems->sum(fn ($i) => $i->product->price_cents * $i->quantity);
+        $amountCents = (int) $cartItems->sum(function ($i) {
+            $variantAmount = $i->variant?->price
+                ?? ($i->variant ? (($i->variant->net_price ?? 0) + ($i->variant->tax ?? 0)) : null);
+            if ($variantAmount !== null) {
+                return (int) round($variantAmount * 100) * (int) $i->quantity;
+            }
+            $price = $i->variant?->selling_price_cents
+                ?? $i->variant?->price_cents
+                ?? ($i->product->selling_price_cents !== null ? (int) round(((float) $i->product->selling_price_cents) * 100) : $i->product->price_cents);
+            return (int) $price * (int) $i->quantity;
+        });
         $currency = config('stripe.currency', 'usd');
 
         if ($amountCents < 1) {
@@ -45,14 +55,29 @@ class CheckoutController extends Controller
             'automatic_payment_methods' => ['enabled' => true],
         ]);
 
-        $cart = $cartItems->map(fn ($i) => [
-            'product' => [
-                'id' => $i->product_id,
-                'name' => $i->product->name,
-            ],
-            'quantity' => (int) $i->quantity,
-            'unit_price_cents' => (int) $i->product->price_cents,
-        ])->values();
+        $cart = $cartItems->map(function ($i) {
+            $variantAmount = $i->variant?->price
+                ?? ($i->variant ? (($i->variant->net_price ?? 0) + ($i->variant->tax ?? 0)) : null);
+            $unit = $variantAmount !== null
+                ? (int) round($variantAmount * 100)
+                : (int) (
+                    $i->variant?->selling_price_cents
+                    ?? $i->variant?->price_cents
+                    ?? ($i->product->selling_price_cents !== null ? (int) round(((float) $i->product->selling_price_cents) * 100) : $i->product->price_cents)
+                );
+            return [
+                'product' => [
+                    'id' => $i->product_id,
+                    'name' => $i->product->name,
+                ],
+                'variant' => $i->variant ? [
+                    'id' => $i->product_variant_id,
+                    'attributes' => $i->variant->attributes,
+                ] : null,
+                'quantity' => (int) $i->quantity,
+                'unit_price_cents' => $unit,
+            ];
+        })->values();
 
         $addresses = $user->addresses()->get(['id','full_name','line1','line2','city','state','postal_code','country','phone','is_default']);
 
@@ -79,7 +104,7 @@ class CheckoutController extends Controller
         }
         $cartItems = CartItem::query()
             ->where('user_id', $user->id)
-            ->with('product')
+            ->with(['product','variant'])
             ->get();
 
         if ($cartItems->isEmpty()) {
@@ -108,7 +133,17 @@ class CheckoutController extends Controller
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $cartItem->product_id,
-                    'unit_price_cents' => (int) $cartItem->product->price_cents,
+                    'product_variant_id' => $cartItem->product_variant_id,
+                    'unit_price_cents' => (int) (function() use ($cartItem) {
+                        $variantAmount = $cartItem->variant?->price
+                            ?? ($cartItem->variant ? (($cartItem->variant->net_price ?? 0) + ($cartItem->variant->tax ?? 0)) : null);
+                        if ($variantAmount !== null) return (int) round($variantAmount * 100);
+                        return (int) (
+                            $cartItem->variant?->selling_price_cents
+                            ?? $cartItem->variant?->price_cents
+                            ?? ($cartItem->product->selling_price_cents !== null ? (int) round(((float) $cartItem->product->selling_price_cents) * 100) : $cartItem->product->price_cents)
+                        );
+                    })(),
                     'quantity' => (int) $cartItem->quantity,
                 ]);
             }
