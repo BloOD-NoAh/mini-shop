@@ -1,7 +1,7 @@
 <x-admin-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Admin • Products</h2>
+            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Admin • Products</h2>
             <a href="{{ url('/admin/products/create') }}" class="btn-primary">New Product</a>
         </div>
     </x-slot>

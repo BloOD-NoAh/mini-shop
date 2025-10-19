@@ -28,11 +28,32 @@
     <nav class="topbar">
         <div class="container-wide h-16 flex items-center justify-between">
             <div class="flex items-center gap-6">
-                <a href="{{ url('/') }}" class="text-lg font-semibold">Mini Shop</a>
-                <a href="{{ url('/cart') }}" class="text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white">Cart</a>
+                <a href="{{ url('/') }}"
+                   @class([
+                     'text-lg font-semibold',
+                     'text-gray-900 dark:text-white' => request()->routeIs('home'),
+                     'text-gray-800 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white' => !request()->routeIs('home'),
+                   ])
+                   @if(request()->routeIs('home')) aria-current="page" @endif
+                >Mini Shop</a>
+                <a href="{{ url('/cart') }}"
+                   @class([
+                     'hover:text-gray-900 dark:hover:text-white',
+                     'text-gray-900 dark:text-white font-semibold' => request()->is('cart*'),
+                     'text-gray-700 dark:text-gray-200' => !request()->is('cart*'),
+                   ])
+                   @if(request()->is('cart*')) aria-current="page" @endif
+                >Cart</a>
                 @auth
                     @if (auth()->user()->is_admin ?? false)
-                        <a href="{{ route('admin.dashboard') }}" class="text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white">Admin</a>
+                        <a href="{{ route('admin.dashboard') }}"
+                           @class([
+                             'hover:text-gray-900 dark:hover:text-white',
+                             'text-gray-900 dark:text-white font-semibold' => request()->is('admin*'),
+                             'text-gray-700 dark:text-gray-200' => !request()->is('admin*'),
+                           ])
+                           @if(request()->is('admin*')) aria-current="page" @endif
+                        >Admin</a>
                     @endif
                 @endauth
             </div>
@@ -43,7 +64,14 @@
                 @auth
                     <span class="text-gray-700 dark:text-gray-200">{{ auth()->user()->name }}</span>
                     @if (Route::has('profile.edit'))
-                        <a href="{{ route('profile.edit') }}" class="text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white">Profile</a>
+                        <a href="{{ route('profile.edit') }}"
+                           @class([
+                             'hover:text-gray-900 dark:hover:text-white',
+                             'text-gray-900 dark:text-white font-semibold' => request()->routeIs('profile.edit'),
+                             'text-gray-700 dark:text-gray-200' => !request()->routeIs('profile.edit'),
+                           ])
+                           @if(request()->routeIs('profile.edit')) aria-current="page" @endif
+                        >Profile</a>
                     @endif
                     @if (Route::has('logout'))
                         <form method="POST" action="{{ route('logout') }}">
@@ -53,23 +81,31 @@
                     @endif
                 @else
                     @if (Route::has('login'))
-                        <a href="{{ route('login') }}" class="text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white">Login</a>
+                        <a href="{{ route('login') }}"
+                           @class([
+                             'hover:text-gray-900 dark:hover:text-white',
+                             'text-gray-900 dark:text-white font-semibold' => request()->routeIs('login'),
+                             'text-gray-700 dark:text-gray-200' => !request()->routeIs('login'),
+                           ])
+                           @if(request()->routeIs('login')) aria-current="page" @endif
+                        >Login</a>
                     @endif
                     @if (Route::has('admin.login'))
-                        <a href="{{ route('admin.login') }}" class="text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white">Admin Login</a>
+                        <a href="{{ route('admin.login') }}"
+                           @class([
+                             'hover:text-gray-900 dark:hover:text-white',
+                             'text-gray-900 dark:text-white font-semibold' => request()->routeIs('admin.login'),
+                             'text-gray-700 dark:text-gray-200' => !request()->routeIs('admin.login'),
+                           ])
+                           @if(request()->routeIs('admin.login')) aria-current="page" @endif
+                        >Admin Login</a>
                     @endif
                 @endauth
             </div>
         </div>
     </nav>
 
-    @isset($header)
-        <header class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
-            <div class="container-wide py-4">
-                {{ $header }}
-            </div>
-        </header>
-    @endisset
+    
 
     <main>
         <div class="container-wide mt-4">

@@ -15,7 +15,7 @@
 </head>
 <body class="layout-standard flex items-center justify-center">
     <div class="w-full max-w-md card">
-        <h1 class="text-2xl font-semibold mb-2">Admin Login</h1>
+        <h1 class="text-2xl font-semibold mb-2 text-gray-900 dark:text-gray-100">Admin Login</h1>
         <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">Sign in to the admin dashboard</p>
 
         @if ($errors->any())

@@ -1,7 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { ref, reactive, computed, onMounted, watch } from 'vue';
 
 const props = defineProps({
   products: { type: Object, required: true },
@@ -11,6 +11,7 @@ const props = defineProps({
 });
 
 const query = ref(props.q || '');
+const localFlash = ref('');
 const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
 function submitSearch() {
@@ -28,18 +29,114 @@ function goPage(url) {
 }
 
 // quantity is fixed at 1; input is disabled and a hidden field is submitted
+
+// Variant selection modal state
+const showVariantModal = ref(false);
+const modalProduct = ref(null);
+const modalVariants = ref([]);
+const modalQty = ref(1);
+const selection = reactive({});
+
+const attributeKeys = computed(() => {
+  const keys = new Set();
+  (modalVariants.value || []).forEach(v => {
+    const attrs = v.attributes || {};
+    Object.keys(attrs).forEach(k => keys.add(k));
+  });
+  return Array.from(keys);
+});
+
+const optionsByKey = computed(() => {
+  const map = {};
+  attributeKeys.value.forEach(k => { map[k] = new Set(); });
+  (modalVariants.value || []).forEach(v => {
+    const attrs = v.attributes || {};
+    attributeKeys.value.forEach(k => {
+      if (attrs[k] !== undefined && attrs[k] !== null) {
+        map[k].add(String(attrs[k]));
+      }
+    });
+  });
+  const out = {};
+  Object.keys(map).forEach(k => { out[k] = Array.from(map[k]); });
+  return out;
+});
+
+const selectedVariant = computed(() => {
+  if (!modalVariants.value?.length) return null;
+  return modalVariants.value.find(v => {
+    const attrs = v.attributes || {};
+    return attributeKeys.value.every(k => String(attrs[k] ?? '') === String(selection[k] ?? ''));
+  }) || null;
+});
+
+function initSelections() {
+  (attributeKeys.value || []).forEach(k => { if (!(k in selection)) selection[k] = ''; });
+}
+
+watch(attributeKeys, () => initSelections());
+
+async function openVariant(product) {
+  try {
+    const res = await fetch(`/products/${product.slug}`, { headers: { Accept: 'application/json' } });
+    const data = await res.json();
+    modalProduct.value = data;
+    modalVariants.value = data.variants || [];
+    modalQty.value = 1;
+    // reset selections
+    Object.keys(selection).forEach(k => delete selection[k]);
+    initSelections();
+    showVariantModal.value = true;
+  } catch (e) {
+    // fallback to page if fetch fails
+    window.location.href = `/products/${product.slug}`;
+  }
+}
+
+function closeVariantModal() {
+  showVariantModal.value = false;
+}
+
+async function submitVariantAdd() {
+  if (!modalProduct.value) return;
+  try {
+    const payload = { quantity: modalQty.value };
+    if (selectedVariant.value) payload.product_variant_id = selectedVariant.value.id;
+    const res = await fetch(`/cart/add/${modalProduct.value.id}`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': csrf,
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.message || 'Failed to add to cart');
+    }
+    const data = await res.json();
+    localFlash.value = data?.message || 'Added to cart';
+    showVariantModal.value = false;
+    setTimeout(() => (localFlash.value = ''), 2000);
+  } catch (e) {
+    localFlash.value = e?.message || 'Failed to add to cart';
+    setTimeout(() => (localFlash.value = ''), 2500);
+  }
+}
 </script>
 
 <template>
-  <Head title="Products" />
+  <Head title="Mini Shop" />
   <AuthenticatedLayout>
     <template #header>
-      <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Products</h2>
+      <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Mini Shop</h2>
     </template>
 
     <div class="py-6">
       <div class="container-wide">
         <div v-if="$page.props.flash?.success" class="mb-4 p-3 rounded bg-green-100 text-green-800">{{ $page.props.flash.success }}</div>
+        <div v-if="localFlash" class="mb-4 p-3 rounded bg-green-100 text-green-800">{{ localFlash }}</div>
         <div class="mb-6">
           <form @submit.prevent="submitSearch" class="flex items-center gap-2">
             <input v-model="query" type="text" placeholder="Search products..." class="input-field" />
@@ -71,7 +168,7 @@ function goPage(url) {
               <div v-if="product.category" class="badge-muted inline-block">{{ product.category }}</div>
               <p class="text-gray-700 dark:text-gray-300">{{ product.price_formatted }}</p>
               <template v-if="(product.variants_count || 0) > 0">
-                <a :href="`/products/${product.slug}`" class="btn-muted">View Options</a>
+                <button type="button" class="btn-muted" @click="openVariant(product)">Choose Options</button>
               </template>
               <form v-else :action="`/cart/add/${product.id}`" method="POST" class="flex items-center gap-2">
                 <input type="hidden" name="_token" :value="csrf" />
@@ -101,5 +198,45 @@ function goPage(url) {
       </div>
     </div>
   </AuthenticatedLayout>
+  
+  <!-- Variant selection modal -->
+  <div v-if="showVariantModal" class="fixed inset-0 z-40 flex items-center justify-center">
+    <div class="absolute inset-0 bg-black/40" @click="closeVariantModal"></div>
+    <div class="relative z-50 w-full max-w-lg mx-4">
+      <div class="card p-5 bg-white dark:bg-gray-900">
+        <div class="flex items-start justify-between mb-3">
+          <h3 class="text-lg font-semibold">{{ modalProduct?.name || 'Select Options' }}</h3>
+          <button type="button" class="btn-muted" @click="closeVariantModal">Close</button>
+        </div>
+        <div class="space-y-4">
+          <div v-if="attributeKeys.length">
+            <div v-for="k in attributeKeys" :key="k" class="mb-3">
+              <label class="input-label">{{ k }}</label>
+              <select v-model="selection[k]" class="input-field text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-900">
+                <option disabled value="">Select {{ k }}</option>
+                <option v-for="opt in (optionsByKey[k] || [])" :key="opt" :value="opt">{{ opt }}</option>
+              </select>
+            </div>
+            <div v-if="!selectedVariant" class="text-sm text-red-600">Please select all options.</div>
+          </div>
+
+          <div v-if="modalProduct" class="space-y-3">
+            <div>
+              <label class="input-label">Quantity</label>
+              <div class="flex items-center gap-2">
+                <button type="button" class="w-10 h-10 flex items-center justify-center border rounded-full font-bold text-xl bg-white hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800" @click="modalQty = Math.max(1, Number(modalQty) - 1)">−</button>
+                <input type="number" name="quantity" v-model.number="modalQty" min="1" class="w-20 input-field text-center" />
+                <button type="button" class="w-10 h-10 flex items-center justify-center border rounded-full font-bold text-xl bg-white hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800" @click="modalQty = Math.max(1, Number(modalQty) + 1)">+</button>
+              </div>
+            </div>
+            <div class="flex items-center justify-end gap-2">
+              <button type="button" class="btn-muted" @click="closeVariantModal">Cancel</button>
+              <button type="button" class="btn-primary" :disabled="attributeKeys.length && !selectedVariant" @click="submitVariantAdd">Add to Cart</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   
 </template>

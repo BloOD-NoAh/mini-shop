@@ -49,7 +49,7 @@ onMounted(() => {
                             <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                                 <NavLink :href="route('home')" :active="route().current('home')">Home</NavLink>
                                 <NavLink :href="route('orders.index')" :active="route().current('orders.index')">Orders</NavLink>
-                                <a href="/cart" class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700 focus:outline-none focus:text-gray-700 dark:focus:text-gray-300 focus:border-gray-300 dark:focus:border-gray-700 transition duration-150 ease-in-out">Cart</a>
+                                <NavLink href="/cart" :active="$page.url && $page.url.startsWith('/cart')">Cart</NavLink>
                             </div>
                         </div>
 
@@ -164,7 +164,7 @@ onMounted(() => {
                                 Toggle theme
                             </button>
                         </div>
-                        <a href="/cart" class="block px-4 py-2 text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none dark:text-gray-300 dark:hover:bg-gray-800 dark:focus:bg-gray-800">Cart</a>
+                        <ResponsiveNavLink href="/cart" :active="$page.url && $page.url.startsWith('/cart')">Cart</ResponsiveNavLink>
                         <ResponsiveNavLink :href="route('orders.index')" :active="route().current('orders.index')">Orders</ResponsiveNavLink>
                         <ResponsiveNavLink :href="route('home')" :active="route().current('home')">Home</ResponsiveNavLink>
                     </div>
@@ -198,15 +198,7 @@ onMounted(() => {
                 </div>
             </nav>
 
-            <!-- Page Heading -->
-            <header
-                class="bg-white shadow dark:bg-gray-800"
-                v-if="$slots.header"
-            >
-                <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                    <slot name="header" />
-                </div>
-            </header>
+            
 
             <!-- Page Content -->
             <main>
