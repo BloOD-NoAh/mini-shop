@@ -81,6 +81,16 @@ class CheckoutController extends Controller
 
         $addresses = $user->addresses()->get(['id','full_name','line1','line2','city','state','postal_code','country','phone','is_default']);
 
+        if ($request->wantsJson()) {
+            return response()->json([
+                'clientSecret' => $intent->client_secret,
+                'amountCents' => $amountCents,
+                'currency' => $currency,
+                'cart' => $cart,
+                'addresses' => $addresses,
+            ]);
+        }
+
         return Inertia::render('Checkout/Pay', [
             'clientSecret' => $intent->client_secret,
             'amountCents' => $amountCents,
@@ -163,6 +173,13 @@ class CheckoutController extends Controller
                 'status' => 'processing',
             ]
         );
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => 'Payment successful',
+                'order_id' => $order->id,
+            ]);
+        }
 
         return redirect()->route('orders.show', $order->id)
             ->with('status', 'Payment successful');

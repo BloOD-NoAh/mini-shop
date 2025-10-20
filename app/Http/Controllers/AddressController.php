@@ -12,6 +12,9 @@ class AddressController extends Controller
     {
         $user = $request->user();
         $addresses = $user->addresses()->latest()->get();
+        if ($request->wantsJson()) {
+            return response()->json(['addresses' => $addresses]);
+        }
         return Inertia::render('Profile/Addresses', [
             'addresses' => $addresses,
         ]);
@@ -28,6 +31,9 @@ class AddressController extends Controller
             $this->setDefaultForUser($user->id, $address->id);
         }
 
+        if ($request->wantsJson()) {
+            return response()->json(['message' => 'Address added', 'address' => $address], 201);
+        }
         return redirect()->back()->with('status', 'Address added');
     }
 
@@ -45,6 +51,9 @@ class AddressController extends Controller
                 $address->save();
             }
         }
+        if ($request->wantsJson()) {
+            return response()->json(['message' => 'Address updated', 'address' => $address]);
+        }
         return redirect()->back()->with('status', 'Address updated');
     }
 
@@ -60,6 +69,9 @@ class AddressController extends Controller
                 $this->setDefaultForUser($userId, $first->id);
             }
         }
+        if ($request->wantsJson()) {
+            return response()->json(null, 204);
+        }
         return redirect()->back()->with('status', 'Address removed');
     }
 
@@ -67,6 +79,9 @@ class AddressController extends Controller
     {
         $this->authorizeAddress($request, $address);
         $this->setDefaultForUser($address->user_id, $address->id);
+        if ($request->wantsJson()) {
+            return response()->json(['message' => 'Default address updated']);
+        }
         return redirect()->back()->with('status', 'Default address updated');
     }
 
