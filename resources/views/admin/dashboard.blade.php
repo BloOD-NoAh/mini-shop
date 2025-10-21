@@ -11,6 +11,7 @@
                 <h3 class="text-lg font-semibold mb-2">Management</h3>
                 <div class="flex items-center gap-3">
                     <a href="{{ url('/admin/products') }}" class="btn-primary">Products</a>
+                    <a href="{{ url('/admin/ai') }}" class="btn-secondary">AI Settings</a>
                 </div>
             </div>
         </div>

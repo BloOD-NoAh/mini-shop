@@ -1,13 +1,18 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
+import GlobalAiSupportModal from '@/Components/GlobalAiSupportModal.vue';
 
 const showingNavigationDropdown = ref(false);
+const page = usePage();
+const isAuthed = computed(() => !!(page?.props?.auth && page.props.auth.user));
+const globalChatOpen = ref(false);
 
 function toggleTheme() {
     const root = document.documentElement;
@@ -24,6 +29,16 @@ onMounted(() => {
         if (shouldDark) root.classList.add('dark'); else root.classList.remove('dark');
     } catch (e) {}
 });
+
+function openAiSupport() {
+    if (!isAuthed.value) return;
+    const hasInline = !!document.querySelector('[data-ai-support-present]');
+    if (hasInline) {
+        window.dispatchEvent(new CustomEvent('open-ai-support'));
+    } else {
+        globalChatOpen.value = true;
+    }
+}
 </script>
 
 <template>
@@ -204,6 +219,18 @@ onMounted(() => {
             <main>
                 <slot />
             </main>
+
+            <!-- Global AI Support Launcher (auth only) -->
+            <button
+                v-if="isAuthed"
+                @click="openAiSupport"
+                class="fixed bottom-6 right-6 z-30 rounded-full shadow-lg bg-indigo-600 text-white w-12 h-12 flex items-center justify-center"
+                title="Customer Support"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7 8h7M7 12h5M5 20l4-4h8a2 2 0 002-2V6a2 2 0 00-2-2H7a2 2 0 00-2 2v12z"/></svg>
+            </button>
+
+            <GlobalAiSupportModal v-if="isAuthed" v-model="globalChatOpen" />
         </div>
     </div>
 </template>

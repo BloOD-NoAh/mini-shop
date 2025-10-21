@@ -1,6 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
+import AiSupportChat from '@/Components/AiSupportChat.vue';
 
 const props = defineProps({
   product: { type: Object, required: true },
@@ -128,4 +129,5 @@ const displayPrice = computed(() => {
       </div>
     </div>
   </AuthenticatedLayout>
+  <AiSupportChat context="product" :id="product.id" />
 </template>

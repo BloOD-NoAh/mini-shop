@@ -12,6 +12,8 @@ use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminSalesController;
 use App\Http\Controllers\Admin\CustomerAdminController;
 use App\Http\Controllers\Admin\OrderAdminController;
+use App\Http\Controllers\ChatController;
+use App\Http\Controllers\Admin\AiSettingsController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -41,6 +43,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/orders', [CheckoutController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [CheckoutController::class, 'show'])->name('orders.show');
 
+
     // Addresses
     Route::get('/addresses', [AddressController::class, 'index'])->name('addresses.index');
     Route::post('/addresses', [AddressController::class, 'store'])->name('addresses.store');
@@ -52,6 +55,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+// AI assistant (public for product context; order answers require auth within controller)
+Route::post('/chat/assist', [ChatController::class, 'assist'])->name('chat.assist');
 
 // Admin auth
 Route::middleware('guest')->group(function () {
@@ -77,6 +83,10 @@ Route::middleware(['auth', 'can:is_admin'])->group(function () {
     Route::put('/admin/orders/{order}', [OrderAdminController::class, 'update'])->name('admin.orders.update');
     Route::post('/admin/orders/{order}/refund', [OrderAdminController::class, 'refund'])->name('admin.orders.refund');
     Route::resource('/admin/products', ProductAdminController::class)->except(['show']);
+
+    // AI settings
+    Route::get('/admin/ai', [AiSettingsController::class, 'index'])->name('admin.ai');
+    Route::post('/admin/ai', [AiSettingsController::class, 'update'])->name('admin.ai.update');
 });
 
 // Vue SPA mounted under /app

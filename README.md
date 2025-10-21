@@ -13,6 +13,7 @@ Features:
 - Browse products, categories, and search
 - Cart, checkout, and order details
 - Admin area to manage products, admins, and view sales
+- AI customer support chat for product and order details (Gemini / ChatGPT / Claude)
 
 ## Requirements
 
@@ -53,6 +54,37 @@ Features:
 - `composer dev` (starts PHP server, queue listener, logs, and Vite)
 - App: http://localhost:8000
 - Vue SPA: http://localhost:8000/app
+
+## AI Customer Support Chat
+
+This project includes a lightweight AI assistant that only answers questions about:
+- Product details (on product pages, public)
+- The signed-in customer’s own order details (on order pages)
+
+Supported providers (API access available in Malaysia):
+- Google Gemini (`gemini-1.5-flash` default)
+- OpenAI ChatGPT (`gpt-4o-mini` default)
+- Anthropic Claude (`claude-3-5-haiku-20241022` default)
+
+Environment configuration (add to `.env`):
+
+```
+GOOGLE_API_KEY=your_google_api_key
+OPENAI_API_KEY=your_openai_api_key
+ANTHROPIC_API_KEY=your_anthropic_api_key
+AI_DEFAULT_PROVIDER=gemini
+GEMINI_MODEL=gemini-1.5-flash
+OPENAI_MODEL=gpt-4o-mini
+ANTHROPIC_MODEL=claude-3-5-haiku-20241022
+```
+
+Run database migrations to create the settings table:
+
+```
+php artisan migrate
+```
+
+Admins can switch the active AI provider and per-provider model at `/admin/ai`.
 
 ## Stripe Setup (optional but recommended)
 
@@ -103,4 +135,3 @@ Notes:
 - SPA (Vue Router) mounted at `/app`: `resources/js/spa`
 - Seeders: `database/seeders`
 - Stripe config: `config/stripe.php`
-

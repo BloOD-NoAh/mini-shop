@@ -67,6 +67,10 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20a4 4 0 10-8 0M12 4a4 4 0 110 8 4 4 0 010-8zM19 8a3 3 0 110 6M5 14a3 3 0 110-6"/></svg>
                 <span class="label">Customers</span>
             </a>
+            <a href="{{ route('admin.ai') }}" class="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 {{ request()->routeIs('admin.ai') ? 'bg-gray-100 dark:bg-gray-800 font-medium' : '' }}">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h6M5 20l4-4h10a2 2 0 002-2V6a2 2 0 00-2-2H7a2 2 0 00-2 2v12z"/></svg>
+                <span class="label">AI Settings</span>
+            </a>
         </nav>
     </aside>
 

@@ -1,6 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
+import AiSupportChat from '@/Components/AiSupportChat.vue';
 
 const props = defineProps({
   order: { type: Object, required: true },
@@ -59,5 +60,5 @@ const props = defineProps({
       </div>
     </div>
   </AuthenticatedLayout>
+  <AiSupportChat context="order" :id="order.id" />
 </template>
-
