@@ -15,6 +15,12 @@ return [
                 'gemini-2.5-flash',
             ],
         ],
+        'ollama' => [
+            // Ollama runs locally; no API key required
+            'base_url' => env('OLLAMA_BASE_URL', 'http://localhost:11434'),
+            'default_model' => env('OLLAMA_MODEL', 'llama3'),
+            'available_models' => explode(',', env('OLLAMA_AVAILABLE_MODELS', 'llama3,mistral,qwen2.5')),
+        ],
         'openai' => [
             'api_key' => env('OPENAI_API_KEY'),
             'default_model' => env('OPENAI_MODEL', 'gpt-4o-mini'),
@@ -34,4 +40,3 @@ return [
         ],
     ],
 ];
-

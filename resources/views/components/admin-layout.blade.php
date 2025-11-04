@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'Mini Shop') }} - Admin</title>
     @vite(['resources/css/app.css','resources/js/app.js'])
     <script>
@@ -70,6 +71,14 @@
             <a href="{{ route('admin.ai') }}" class="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 {{ request()->routeIs('admin.ai') ? 'bg-gray-100 dark:bg-gray-800 font-medium' : '' }}">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h6M5 20l4-4h10a2 2 0 002-2V6a2 2 0 00-2-2H7a2 2 0 00-2 2v12z"/></svg>
                 <span class="label">AI Settings</span>
+            </a>
+            <a href="{{ route('admin.ai.analytics') }}" class="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 {{ request()->routeIs('admin.ai.analytics') ? 'bg-gray-100 dark:bg-gray-800 font-medium' : '' }}">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 19h16M4 13h16M4 7h16"/></svg>
+                <span class="label">AI Analytics</span>
+            </a>
+            <a href="{{ route('admin.payments') }}" class="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 {{ request()->routeIs('admin.payments') ? 'bg-gray-100 dark:bg-gray-800 font-medium' : '' }}">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6"/></svg>
+                <span class="label">Payment Settings</span>
             </a>
         </nav>
     </aside>

@@ -5,6 +5,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\StripeWebhookController;
+use App\Http\Controllers\PayPalController;
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\Admin\ProductAdminController;
 use App\Http\Controllers\Admin\Auth\AdminLoginController;
@@ -14,6 +15,8 @@ use App\Http\Controllers\Admin\CustomerAdminController;
 use App\Http\Controllers\Admin\OrderAdminController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\Admin\AiSettingsController;
+use App\Http\Controllers\Admin\AdminAiAnalyticsController;
+use App\Http\Controllers\Admin\PaymentSettingsController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -37,11 +40,15 @@ Route::middleware('auth')->group(function () {
     Route::post('/cart/update-item/{item}', [CartController::class, 'updateItem']);
     Route::delete('/cart/remove-item/{item}', [CartController::class, 'removeItem']);
 
-    // Checkout (Inertia + Stripe intent)
+    // Checkout (Inertia + Stripe/PayPal)
     Route::get('/checkout', [CheckoutController::class, 'create'])->name('checkout.create');
     Route::post('/checkout/confirm', [CheckoutController::class, 'confirm'])->name('checkout.confirm');
     Route::get('/orders', [CheckoutController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [CheckoutController::class, 'show'])->name('orders.show');
+
+    // PayPal endpoints (authenticated)
+    Route::post('/paypal/create-order', [PayPalController::class, 'createOrder'])->name('paypal.createOrder');
+    Route::post('/paypal/capture', [PayPalController::class, 'capture'])->name('paypal.capture');
 
 
     // Addresses
@@ -87,6 +94,14 @@ Route::middleware(['auth', 'can:is_admin'])->group(function () {
     // AI settings
     Route::get('/admin/ai', [AiSettingsController::class, 'index'])->name('admin.ai');
     Route::post('/admin/ai', [AiSettingsController::class, 'update'])->name('admin.ai.update');
+
+    // AI analytics
+    Route::get('/admin/ai-analytics', [AdminAiAnalyticsController::class, 'index'])->name('admin.ai.analytics');
+    Route::post('/admin/ai-analytics/assist', [AdminAiAnalyticsController::class, 'assist'])->name('admin.ai.analytics.assist');
+
+    // Payment settings
+    Route::get('/admin/payments', [PaymentSettingsController::class, 'index'])->name('admin.payments');
+    Route::post('/admin/payments', [PaymentSettingsController::class, 'update'])->name('admin.payments.update');
 });
 
 // Vue SPA mounted under /app

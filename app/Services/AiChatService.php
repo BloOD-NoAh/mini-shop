@@ -30,10 +30,37 @@ class AiChatService
         $model = $options['model'] ?? $this->modelFor($provider);
 
         return match ($provider) {
+            'ollama' => $this->callOllama($model, $messages),
             'openai' => $this->callOpenAI($model, $messages),
             'anthropic' => $this->callAnthropic($model, $messages),
             default => $this->callGemini($model, $messages),
         };
+    }
+
+    protected function callOllama(string $model, array $messages): string
+    {
+        $base = rtrim(config('ai.providers.ollama.base_url', 'http://localhost:11434'), '/');
+        if (!$base) return 'Sorry, AI is not available right now.';
+
+        // Ollama supports system role and user/assistant messages directly
+        $payload = [
+            'model' => $model,
+            'messages' => array_map(function ($m) {
+                return [
+                    'role' => $m['role'],
+                    'content' => $m['content'],
+                ];
+            }, $messages),
+            'stream' => false,
+            'options' => [ 'temperature' => 0.2 ],
+        ];
+
+        $res = Http::timeout(30)->post($base.'/api/chat', $payload);
+        if (!$res->ok()) {
+            return $this->handleHttpError('Ollama', $res);
+        }
+        $text = $res->json('message.content');
+        return (string) ($text ?? '');
     }
 
     protected function callOpenAI(string $model, array $messages): string

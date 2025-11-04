@@ -33,7 +33,15 @@
                         @foreach ($providers as $name => $cfg)
                             <div class="p-4 rounded border dark:border-gray-700">
                                 <div class="font-semibold mb-2">{{ ucfirst($name) }}</div>
-                                <div class="text-sm mb-2">API key: {!! $cfg['api_key'] ? '<span class="text-green-600">Configured</span>' : '<span class="text-red-600">Not configured</span>' !!}</div>
+                                <div class="text-sm mb-2">
+                                    @if (isset($cfg['api_key']))
+                                        API key: {!! $cfg['api_key'] ? '<span class="text-green-600">Configured</span>' : '<span class="text-red-600">Not configured</span>' !!}
+                                    @elseif (isset($cfg['base_url']))
+                                        Base URL: <span class="font-mono">{{ $cfg['base_url'] }}</span>
+                                    @else
+                                        Provider configured
+                                    @endif
+                                </div>
                                 <label class="input-label">Model</label>
                                 <select name="models[{{ $name }}]" class="input-field w-full">
                                     @foreach ($cfg['available_models'] as $model)
@@ -52,4 +60,3 @@
         </div>
     </div>
 </x-admin-layout>
-

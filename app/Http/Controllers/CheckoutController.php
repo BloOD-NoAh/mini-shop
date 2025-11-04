@@ -45,15 +45,25 @@ class CheckoutController extends Controller
             abort(400, 'Invalid amount');
         }
 
-        Stripe::setApiKey(config('stripe.secret'));
-        $intent = PaymentIntent::create([
-            'amount' => $amountCents,
-            'currency' => $currency,
-            'metadata' => [
-                'user_id' => (string) $user->id,
-            ],
-            'automatic_payment_methods' => ['enabled' => true],
-        ]);
+        // Determine enabled methods (from settings; fallback to Stripe only)
+        $enabled = (array) (\App\Models\Setting::get('payment.methods.enabled') ?: []);
+        $available = [];
+        if (($enabled['stripe'] ?? false) && config('stripe.secret')) $available[] = 'stripe';
+        if (($enabled['paypal'] ?? false) && config('paypal.client_id') && config('paypal.secret')) $available[] = 'paypal';
+        if ($available === []) $available = ['stripe'];
+
+        $method = $request->query('method');
+        if (!$method || !in_array($method, $available, true)) {
+            if (count($available) === 1) {
+                return redirect()->route('checkout.create', ['method' => $available[0]]);
+            }
+            // Show method selection page
+            return Inertia::render('Checkout/SelectMethod', [
+                'methods' => $available,
+                'amountCents' => $amountCents,
+                'currency' => $currency,
+            ]);
+        }
 
         $cart = $cartItems->map(function ($i) {
             $variantAmount = $i->variant?->price
@@ -80,6 +90,34 @@ class CheckoutController extends Controller
         })->values();
 
         $addresses = $user->addresses()->get(['id','full_name','line1','line2','city','state','postal_code','country','phone','is_default']);
+
+        if ($method === 'paypal') {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'amountCents' => $amountCents,
+                    'currency' => $currency,
+                    'cart' => $cart,
+                    'addresses' => $addresses,
+                ]);
+            }
+            return Inertia::render('Checkout/PayPal', [
+                'amountCents' => $amountCents,
+                'currency' => $currency,
+                'cart' => $cart,
+                'addresses' => $addresses,
+            ]);
+        }
+
+        // Default Stripe flow
+        Stripe::setApiKey(config('stripe.secret'));
+        $intent = PaymentIntent::create([
+            'amount' => $amountCents,
+            'currency' => $currency,
+            'metadata' => [
+                'user_id' => (string) $user->id,
+            ],
+            'automatic_payment_methods' => ['enabled' => true],
+        ]);
 
         if ($request->wantsJson()) {
             return response()->json([
